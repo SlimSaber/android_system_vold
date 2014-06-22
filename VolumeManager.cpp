@@ -1600,11 +1600,8 @@ int VolumeManager::cleanupAsec(Volume *v, bool force) {
     AsecIdCollection removeAsec;
     AsecIdCollection removeObb;
 
-    // Continue for the primary storage (VOL_PROVIDES_ASEC) and for the
-    // external apps volume (VOL_EXTERNAL_APPS) if app moving is enabled
-    if ((v->getFlags() & VOL_PROVIDES_ASEC) == 0
-                && ((v->getFlags() & VOL_EXTERNAL_APPS) == 0
-                        || !v->isExternalAppsEnabled())) {
+    // Only primary storage needs ASEC cleanup
+    if (!(v->getFlags() & VOL_PROVIDES_ASEC)) {
         return 0;
     }
 
