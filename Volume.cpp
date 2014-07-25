@@ -50,7 +50,6 @@
 #include "Exfat.h"
 #include "Process.h"
 #include "cryptfs.h"
-#include "VoldUtil.h"
 
 #ifndef FUSE_SDCARD_UID
 #define FUSE_SDCARD_UID 1023
@@ -63,7 +62,7 @@
 #define DO_STRINGIFY(str) #str
 #define STRINGIFY(str) DO_STRINGIFY(str)
 
-static char SDCARD_DAEMON_PATH[] = HELPER_PATH "sdcard";
+static char SDCARD_DAEMON_PATH[] = "/system/bin/sdcard";
 
 extern "C" void dos_partition_dec(void const *pp, struct dos_partition *d);
 extern "C" void dos_partition_enc(void *pp, struct dos_partition *d);
@@ -110,7 +109,7 @@ const char *Volume::LOOPDIR           = "/mnt/obb";
 const char *Volume::FUSEDIR           = "/mnt/fuse";
 
 
-extern "C" const char *stateToStr(int state) {
+static const char *stateToStr(int state) {
     if (state == Volume::State_Init)
         return "Initializing";
     else if (state == Volume::State_NoMedia)
@@ -454,14 +453,14 @@ int Volume::mountVol() {
 
        if (n != 1) {
            /* We only expect one device node returned when mounting encryptable volumes */
-           SLOGE("Too many device nodes returned when mounting %s\n", getMountpoint());
+           SLOGE("Too many device nodes returned when mounting %d\n", getMountpoint());
            return -1;
        }
 
        if (cryptfs_setup_volume(getLabel(), MAJOR(deviceNodes[0]), MINOR(deviceNodes[0]),
                                 new_sys_path, sizeof(new_sys_path),
                                 &new_major, &new_minor)) {
-           SLOGE("Cannot setup encryption mapping for %s\n", getMountpoint());
+           SLOGE("Cannot setup encryption mapping for %d\n", getMountpoint());
            return -1;
        }
        /* We now have the new sysfs path for the decrypted block device, and the
